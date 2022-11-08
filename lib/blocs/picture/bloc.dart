@@ -68,11 +68,7 @@ class PictureBloc extends Bloc<PictureEvent, PictureState> {
         ));
       }
     } catch (_) {
-      if (state.pictures.isEmpty) {
-        emit(state.copyWith(status: PictureStatus.failure));
-      } else {
-        emit(state.copyWith(hasReachedMax: true));
-      }
+      emit(state.copyWith(status: PictureStatus.failure));
     }
   }
 }

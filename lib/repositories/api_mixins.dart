@@ -42,6 +42,7 @@ mixin GetMixin<M> on AbstractAPIRepository {
 
   M? parse(Map<String, dynamic> data);
 }
+
 mixin PaginatedListMixin<M> on AbstractAPIRepository {
   Future<List<M>> getPage({QueryParams? queryParams}) async {
     final page = await _apiRepository.page(

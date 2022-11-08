@@ -17,7 +17,6 @@ class PicturePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -30,9 +29,7 @@ class PicturePage extends StatelessWidget {
               child: Stack(
                 children: [
                   CachedNetworkImage(
-                    height: height * 0.6,
-                    width: double.infinity,
-                    fit: BoxFit.fill,
+                    fit: BoxFit.fitHeight,
                     imageUrl: model.urls.regular,
                     placeholder: (context, url) =>
                         BlurHash(hash: model.blurHash),

@@ -64,98 +64,116 @@ class _PicturesListState extends State<_PicturesList> {
     double width = MediaQuery.of(context).size.width;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: width * 0.05 / 2),
-      child: BlocBuilder<PictureBloc, PictureState>(builder: (context, state) {
-        switch (state.status) {
-          case PictureStatus.failure:
-            return Center(
-                child: Column(
-              children: [
-                const Text('failed to fetch posts'),
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<PictureBloc>().add(const PictureFetched());
-                  },
-                  child: const Text('Repeat'),
-                ),
-              ],
-            ));
-          case PictureStatus.success:
-            if (state.pictures.isEmpty) {
-              return const Center(child: Text('no posts'));
+      child: BlocConsumer<PictureBloc, PictureState>(
+        buildWhen: (_, current) {
+          return !(current.status == PictureStatus.failure && current.pictures.isEmpty);
+        },
+          listener: (context, state) {
+            if (state.pictures.isNotEmpty && state.status == PictureStatus.failure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Something went wrong!'),
+                    action: SnackBarAction(
+                      label: 'Ok',
+                      onPressed: () {
+                      },
+                    ),
+                  )
+              );
             }
-            return CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                const SliverPersistentHeader(
-                  pinned: true,
-                  delegate: MySliverHeaderDelegate(),
-                ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    childCount:
-                        countRow(state.pictures.length, state.hasReachedMax),
-                    (context, index) {
-                      if (state.pictures.length % 2 == 0) {
-                        if (index + 1 == (state.pictures.length ~/ 2) + 1) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        } else {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: _PicturesRow(pictures: [
-                              state.pictures[2 * index],
-                              state.pictures[2 * index + 1]
-                            ]),
-                          );
-                        }
-                      } else {
-                        if (index == state.pictures.length ~/ 2 + 1) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        } else {
-                          if (index == state.pictures.length ~/ 2) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: _PicturesRow(pictures: [
-                                state.pictures[2 * index],
-                              ]),
-                            );
+          },
+          builder: (context, state) {
+            switch (state.status) {
+              case PictureStatus.failure:
+                return Center(
+                    child: Column(
+                  children: [
+                    const Text('failed to fetch posts'),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<PictureBloc>().add(const PictureFetched());
+                      },
+                      child: const Text('Repeat'),
+                    ),
+                  ],
+                ));
+              case PictureStatus.success:
+                if (state.pictures.isEmpty) {
+                  return const Center(child: Text('no posts'));
+                }
+                return CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    const SliverPersistentHeader(
+                      pinned: true,
+                      delegate: MySliverHeaderDelegate(),
+                    ),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        childCount: countRow(
+                            state.pictures.length, state.hasReachedMax),
+                        (context, index) {
+                          if (state.pictures.length % 2 == 0) {
+                            if (index + 1 == (state.pictures.length ~/ 2) + 1) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            } else {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: _PicturesRow(pictures: [
+                                  state.pictures[2 * index],
+                                  state.pictures[2 * index + 1]
+                                ]),
+                              );
+                            }
+                          } else {
+                            if (index == state.pictures.length ~/ 2 + 1) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            } else {
+                              if (index == state.pictures.length ~/ 2) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: _PicturesRow(pictures: [
+                                    state.pictures[2 * index],
+                                  ]),
+                                );
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: _PicturesRow(pictures: [
+                                  state.pictures[2 * index],
+                                  state.pictures[2 * index + 1]
+                                ]),
+                              );
+                            }
                           }
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: _PicturesRow(pictures: [
-                              state.pictures[2 * index],
-                              state.pictures[2 * index + 1]
-                            ]),
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              case PictureStatus.initial:
+                return CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    const SliverPersistentHeader(
+                        pinned: true, delegate: MySliverHeaderDelegate()),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        childCount: 5,
+                        (context, index) {
+                          return const Padding(
+                            padding: EdgeInsets.only(bottom: 10),
+                            child: _RowsSkeleton(),
                           );
-                        }
-                      }
-                    },
-                  ),
-                ),
-              ],
-            );
-          case PictureStatus.initial:
-            return CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                const SliverPersistentHeader(
-                    pinned: true, delegate: MySliverHeaderDelegate()),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    childCount: 5,
-                    (context, index) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 10),
-                        child: _RowsSkeleton(),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            );
-        }
-      }),
+                        },
+                      ),
+                    ),
+                  ],
+                );
+            }
+          }),
     );
   }
 }
